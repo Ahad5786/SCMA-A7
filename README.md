@@ -12,4 +12,21 @@ How It Works:
 Data Loading: The app loads placeholder data for demonstration purposes. You can replace this with your actual financial data for real-time tracking.
 Data Visualization: Use the interactive charts to see trends and make informed financial decisions.
 Insights: The app provides a summary of your financial data, helping you to identify patterns and areas for improvement.
+Usage Guidelines:
+
+Starting the App:
+
+Run the application using streamlit run PERSONAL_FINANCE_TRACKER.py from the terminal.
+The app will open in your default web browser.
+Viewing Financial Data:
+
+The app displays placeholder financial data. Replace this with your actual data files as needed.
+Use the interactive charts to view trends in your income and expenses.
+Interacting with the App:
+
+Charts: Explore different charts to see your financial data over time. Hover over data points for more details.
+Navigation: Use the sidebar (if applicable) to navigate through different sections of the app or to load new data files.
+Updating Data:
+
+Modify or add your data files in the same directory as the script to update the financial information displayed in the app.
 Contact:For any questions or further assistance, please reach out to ahadzifain2028@gmail.com
