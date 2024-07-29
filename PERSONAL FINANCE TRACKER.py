@@ -61,3 +61,5 @@ if not st.session_state['data'].empty:
     st.metric("Net Savings", f"${net_savings:.2f}")
 else:
     st.write("No transactions to summarize.")
+
+  
