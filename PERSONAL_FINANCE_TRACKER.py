@@ -81,5 +81,5 @@ st.altair_chart(bar_chart, use_container_width=True)
 st.markdown("""
 **Developed by Ahad Zifain Miyanji**
 
-For more information, contact me at [email@example.com](mailto:email@example.com)
+For more information, contact me at [email@example.com](mailto:ahadzifain2028@gmail.com)
 """)
