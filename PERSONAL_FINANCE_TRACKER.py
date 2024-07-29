@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 from PIL import Image
-import os
 
 # Set the page configuration
 st.set_page_config(
@@ -11,12 +10,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
-
-# Load and display the logo image if it exists
-logo_path = "logo.png"
-if os.path.exists(logo_path):
-    logo = Image.open(logo_path)
-    st.image(logo, width=150)
 
 # Title of the app
 st.title("Personal Finance Tracker")
@@ -29,8 +22,16 @@ Welcome to your Personal Finance Tracker! This app helps you monitor your income
 # Load the data
 @st.cache_data
 def load_data():
-    income_data = pd.read_csv("income_data.csv")
-    expenses_data = pd.read_csv("expenses_data.csv")
+    # Placeholder data since we are not using actual CSV files
+    income_data = pd.DataFrame({
+        "Month": ["January", "February", "March"],
+        "Income": [4000, 4200, 4300]
+    })
+    
+    expenses_data = pd.DataFrame({
+        "Month": ["January", "February", "March"],
+        "Expenses": [3200, 3500, 3300]
+    })
     return income_data, expenses_data
 
 income_data, expenses_data = load_data()
@@ -46,53 +47,39 @@ combined_data = pd.merge(income_data, expenses_data, on="Month")
 # Calculate savings
 combined_data["Savings"] = combined_data["Income"] - combined_data["Expenses"]
 
-# Calculate total savings
-total_savings = combined_data["Savings"].sum()
+# Display the combined data
+st.write("Combined Data", combined_data)
 
-# Display total savings
-st.metric("Total Savings", f"${total_savings:,.2f}")
+# Visualize the data
+st.header("Visualizations")
 
-# Plotting
-st.subheader("Monthly Income, Expenses, and Savings")
+# Line chart for income and expenses
+line_chart = alt.Chart(combined_data).mark_line().encode(
+    x="Month",
+    y=alt.Y("Income", title="Amount"),
+    color=alt.value("blue")
+).interactive()
 
-# Altair chart for Income and Expenses
-income_expenses_chart = alt.Chart(combined_data).mark_bar().encode(
-    x=alt.X('Month', sort=None),
-    y=alt.Y('value', title='Amount'),
-    color=alt.Color('variable', legend=alt.Legend(title="Legend")),
-    column=alt.Column('variable', header=alt.Header(title=""))
-).transform_fold(
-    fold=['Income', 'Expenses']
-).properties(
-    width=200,
-    height=300
-).configure_axis(
-    labelFontSize=12,
-    titleFontSize=14
-).configure_header(
-    titleFontSize=16,
-    labelFontSize=14
-)
+line_chart += alt.Chart(combined_data).mark_line().encode(
+    x="Month",
+    y=alt.Y("Expenses", title="Amount"),
+    color=alt.value("red")
+).interactive()
 
-# Altair chart for Savings
-savings_chart = alt.Chart(combined_data).mark_line(point=True).encode(
-    x=alt.X('Month', sort=None),
-    y=alt.Y('Savings', title='Savings'),
-    color=alt.value('green')
-).properties(
-    width=600,
-    height=300
-).configure_axis(
-    labelFontSize=12,
-    titleFontSize=14
-)
+st.altair_chart(line_chart, use_container_width=True)
 
-# Display the charts
-st.altair_chart(income_expenses_chart, use_container_width=True)
-st.altair_chart(savings_chart, use_container_width=True)
+# Bar chart for savings
+bar_chart = alt.Chart(combined_data).mark_bar().encode(
+    x="Month",
+    y="Savings",
+    color=alt.value("green")
+).interactive()
+
+st.altair_chart(bar_chart, use_container_width=True)
 
 # Footer
 st.markdown("""
----
 **Developed by Ahad Zifain Miyanji**
+
+For more information, contact me at [email@example.com](mailto:email@example.com)
 """)
