@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 from PIL import Image
+import os
 
 # Set the page configuration
 st.set_page_config(
@@ -11,11 +12,11 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# Load the logo image
-logo = Image.open("logo.png")
-
-# Display the logo image
-st.image(logo, width=150)
+# Load and display the logo image if it exists
+logo_path = "logo.png"
+if os.path.exists(logo_path):
+    logo = Image.open(logo_path)
+    st.image(logo, width=150)
 
 # Title of the app
 st.title("Personal Finance Tracker")
