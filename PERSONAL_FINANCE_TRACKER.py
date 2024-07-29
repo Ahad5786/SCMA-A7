@@ -1,63 +1,97 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
+import altair as alt
+from PIL import Image
 
-# Initialize session state variables
-if 'data' not in st.session_state:
-    st.session_state['data'] = pd.DataFrame(columns=['Date', 'Type', 'Amount', 'Category'])
+# Set the page configuration
+st.set_page_config(
+    page_title="Personal Finance Tracker",
+    page_icon="💰",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
-# Title and description
+# Load the logo image
+logo = Image.open("logo.png")
+
+# Display the logo image
+st.image(logo, width=150)
+
+# Title of the app
 st.title("Personal Finance Tracker")
-st.write("Track your income and expenses, visualize your spending patterns, and set budget goals.")
 
-# Sidebar for input
-st.sidebar.header("Add Transaction")
-date = st.sidebar.date_input("Date")
-transaction_type = st.sidebar.selectbox("Type", ["Income", "Expense"])
-amount = st.sidebar.number_input("Amount", min_value=0.0, format="%.2f")
-category = st.sidebar.text_input("Category")
+# Introduction
+st.markdown("""
+Welcome to your Personal Finance Tracker! This app helps you monitor your income, expenses, and investments over the year.
+""")
 
-if st.sidebar.button("Add"):
-    new_transaction = pd.DataFrame([[date, transaction_type, amount, category]], columns=['Date', 'Type', 'Amount', 'Category'])
-    st.session_state['data'] = pd.concat([st.session_state['data'], new_transaction], ignore_index=True)
-    st.sidebar.success("Transaction added!")
+# Load the data
+@st.cache_data
+def load_data():
+    income_data = pd.read_csv("income_data.csv")
+    expenses_data = pd.read_csv("expenses_data.csv")
+    return income_data, expenses_data
 
-# Display data
-st.header("Transaction History")
-st.dataframe(st.session_state['data'])
+income_data, expenses_data = load_data()
 
-# Visualization
-st.header("Spending Patterns")
-if not st.session_state['data'].empty:
-    expenses = st.session_state['data'][st.session_state['data']['Type'] == 'Expense']
-    if not expenses.empty:
-        fig, ax = plt.subplots()
-        expenses.groupby('Category')['Amount'].sum().plot(kind='pie', autopct='%1.1f%%', ax=ax)
-        ax.set_ylabel('')
-        st.pyplot(fig)
-    else:
-        st.write("No expenses to display.")
-else:
-    st.write("No transactions to display.")
+# Display the data
+st.sidebar.header("Data")
+st.sidebar.write("Income Data", income_data)
+st.sidebar.write("Expenses Data", expenses_data)
 
-# Budget Goal
-st.header("Set Budget Goal")
-budget = st.number_input("Monthly Budget", min_value=0.0, format="%.2f")
-if budget > 0:
-    total_expenses = expenses['Amount'].sum() if not expenses.empty else 0.0
-    remaining_budget = budget - total_expenses
-    st.metric("Remaining Budget", f"${remaining_budget:.2f}")
-else:
-    st.write("Please set a budget goal.")
+# Combine the data into a single DataFrame
+combined_data = pd.merge(income_data, expenses_data, on="Month")
 
-# Financial Summary
-st.header("Financial Summary")
-if not st.session_state['data'].empty:
-    total_income = st.session_state['data'][st.session_state['data']['Type'] == 'Income']['Amount'].sum()
-    total_expenses = st.session_state['data'][st.session_state['data']['Type'] == 'Expense']['Amount'].sum()
-    net_savings = total_income - total_expenses
-    st.metric("Total Income", f"${total_income:.2f}")
-    st.metric("Total Expenses", f"${total_expenses:.2f}")
-    st.metric("Net Savings", f"${net_savings:.2f}")
-else:
-    st.write("No transactions to summarize.")
+# Calculate savings
+combined_data["Savings"] = combined_data["Income"] - combined_data["Expenses"]
+
+# Calculate total savings
+total_savings = combined_data["Savings"].sum()
+
+# Display total savings
+st.metric("Total Savings", f"${total_savings:,.2f}")
+
+# Plotting
+st.subheader("Monthly Income, Expenses, and Savings")
+
+# Altair chart for Income and Expenses
+income_expenses_chart = alt.Chart(combined_data).mark_bar().encode(
+    x=alt.X('Month', sort=None),
+    y=alt.Y('value', title='Amount'),
+    color=alt.Color('variable', legend=alt.Legend(title="Legend")),
+    column=alt.Column('variable', header=alt.Header(title=""))
+).transform_fold(
+    fold=['Income', 'Expenses']
+).properties(
+    width=200,
+    height=300
+).configure_axis(
+    labelFontSize=12,
+    titleFontSize=14
+).configure_header(
+    titleFontSize=16,
+    labelFontSize=14
+)
+
+# Altair chart for Savings
+savings_chart = alt.Chart(combined_data).mark_line(point=True).encode(
+    x=alt.X('Month', sort=None),
+    y=alt.Y('Savings', title='Savings'),
+    color=alt.value('green')
+).properties(
+    width=600,
+    height=300
+).configure_axis(
+    labelFontSize=12,
+    titleFontSize=14
+)
+
+# Display the charts
+st.altair_chart(income_expenses_chart, use_container_width=True)
+st.altair_chart(savings_chart, use_container_width=True)
+
+# Footer
+st.markdown("""
+---
+**Developed by Ahad Zifain Miyanji**
+""")
